@@ -22,6 +22,7 @@
       --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
       --success: #ffffff;
       --error: #ffb3b3;
+      --warn: #ffe7a3;
     }
 
     body {
@@ -216,6 +217,8 @@
       font-size: 14px;
       line-height: 1.5;
       color: var(--muted);
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .message.success {
@@ -224,6 +227,10 @@
 
     .message.error {
       color: var(--error);
+    }
+
+    .message.warn {
+      color: var(--warn);
     }
 
     .switch-link {
@@ -244,6 +251,19 @@
       font-size: 12px;
       color: rgba(255,255,255,0.35);
       text-align: center;
+    }
+
+    .debug-box {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
     @media (max-width: 520px) {
@@ -306,6 +326,8 @@
       <a class="switch-link" href="index.html">Нет аккаунта? Зарегистрироваться</a>
     </form>
 
+    <div class="debug-box" id="debugBox">Диагностика: загрузка...</div>
+
     <div class="footer-note">Для своих © 2026</div>
   </div>
 
@@ -323,18 +345,12 @@
       databaseURL: "https://dlya-svoih-5db6a-default-rtdb.firebaseio.com"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
     const form = document.getElementById("loginForm");
     const usernameInput = document.getElementById("username");
     const passwordInput = document.getElementById("password");
     const loginBtn = document.getElementById("loginBtn");
     const message = document.getElementById("message");
-
-    if (localStorage.getItem("currentUser")) {
-      window.location.href = "main.html";
-    }
+    const debugBox = document.getElementById("debugBox");
 
     function showMessage(text, type = "") {
       message.textContent = text;
@@ -344,8 +360,55 @@
       }
     }
 
+    function setDebug(text) {
+      debugBox.textContent = text;
+    }
+
     function normalizeUsername(username) {
       return username.trim().toLowerCase();
+    }
+
+    function describeError(error) {
+      if (!error) return "неизвестная ошибка";
+      if (typeof error === "string") return error;
+      return error.code || error.message || JSON.stringify(error);
+    }
+
+    function browserChecks() {
+      try {
+        localStorage.setItem("__test__", "1");
+        localStorage.removeItem("__test__");
+      } catch (e) {
+        showMessage("В этом браузере недоступен localStorage. Открой ссылку в обычном Chrome или Safari.", "error");
+        setDebug("Провалена проверка localStorage: " + describeError(e));
+        return false;
+      }
+
+      if (!window.isSecureContext) {
+        showMessage("Страница открыта не в безопасном режиме. Нужен обычный браузер и HTTPS.", "error");
+        setDebug("isSecureContext = false");
+        return false;
+      }
+
+      if (!window.crypto || !window.crypto.subtle) {
+        showMessage("В этом браузере недоступен crypto.subtle. Открой ссылку в обычном Chrome или Safari.", "error");
+        setDebug("Нет window.crypto.subtle");
+        return false;
+      }
+
+      if (!window.TextEncoder) {
+        showMessage("В этом браузере недоступен TextEncoder. Открой ссылку в обычном Chrome или Safari.", "error");
+        setDebug("Нет window.TextEncoder");
+        return false;
+      }
+
+      if (!window.firebase) {
+        showMessage("Firebase не загрузился. Попробуй обычный браузер или режим инкогнито.", "error");
+        setDebug("window.firebase отсутствует");
+        return false;
+      }
+
+      return true;
     }
 
     async function hashPassword(password) {
@@ -356,8 +419,65 @@
       return hashArray.map(byte => byte.toString(16).padStart(2, "0")).join("");
     }
 
+    window.addEventListener("error", function (event) {
+      const errText = event.message || "неизвестная ошибка скрипта";
+      showMessage("Ошибка JavaScript: " + errText, "error");
+      setDebug("window.onerror:\n" + errText);
+    });
+
+    window.addEventListener("unhandledrejection", function (event) {
+      const errText = describeError(event.reason);
+      showMessage("Необработанная ошибка: " + errText, "error");
+      setDebug("unhandledrejection:\n" + errText);
+    });
+
+    let db = null;
+
+    try {
+      if (!browserChecks()) {
+        throw new Error("Предварительная проверка браузера не пройдена");
+      }
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+
+      db = firebase.firestore();
+
+      setDebug(
+        "Диагностика:\n" +
+        "localStorage: OK\n" +
+        "SecureContext: " + window.isSecureContext + "\n" +
+        "crypto.subtle: OK\n" +
+        "TextEncoder: OK\n" +
+        "Firebase SDK: OK\n" +
+        "UserAgent: " + navigator.userAgent
+      );
+
+      if (localStorage.getItem("currentUser")) {
+        window.location.href = "main.html";
+      }
+    } catch (error) {
+      showMessage("Ошибка инициализации: " + describeError(error), "error");
+      setDebug(
+        "Ошибка инициализации:\n" +
+        describeError(error) +
+        "\n\nUserAgent:\n" +
+        navigator.userAgent
+      );
+    }
+
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
+
+      if (!browserChecks()) {
+        return;
+      }
+
+      if (!db) {
+        showMessage("База не инициализирована. Смотри диагностику ниже.", "error");
+        return;
+      }
 
       const rawUsername = usernameInput.value.trim();
       const password = passwordInput.value.trim();
@@ -371,12 +491,15 @@
       try {
         loginBtn.disabled = true;
         loginBtn.textContent = "Вход...";
+        showMessage("");
+        setDebug("Проверка аккаунта: " + username);
 
         const userRef = db.collection("users").doc(username);
         const userSnap = await userRef.get();
 
         if (!userSnap.exists) {
           showMessage("Такого аккаунта не существует.", "error");
+          setDebug("Аккаунт не найден: " + username);
           return;
         }
 
@@ -385,20 +508,29 @@
 
         if (userData.passwordHash !== passwordHash) {
           showMessage("Неверный пароль.", "error");
+          setDebug("Пароль не совпал для пользователя: " + username);
           return;
         }
 
         localStorage.setItem("currentUser", username);
 
         showMessage("Вход выполнен успешно.", "success");
+        setDebug("Вход успешен: " + username);
 
-        setTimeout(() => {
+        setTimeout(function () {
           window.location.href = "main.html";
         }, 800);
 
       } catch (error) {
+        const errText = describeError(error);
         console.error(error);
-        showMessage("Ошибка входа. Проверь Firebase и Firestore.", "error");
+        showMessage("Ошибка входа: " + errText, "error");
+        setDebug(
+          "Ошибка входа:\n" +
+          errText +
+          "\n\nUserAgent:\n" +
+          navigator.userAgent
+        );
       } finally {
         loginBtn.disabled = false;
         loginBtn.textContent = "Войти";
