@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Для своих — Регистрация</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #050505;
+      --card: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.15);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.65);
+      --input: rgba(255, 255, 255, 0.08);
+      --input-focus: rgba(255, 255, 255, 0.12);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      --success: #ffffff;
+      --error: #ffb3b3;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.06), transparent 30%),
+        linear-gradient(135deg, #000000, #111111 45%, #050505);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bg-lines {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .line {
+      position: absolute;
+      width: 1px;
+      height: 180%;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(255,255,255,0.12),
+        transparent
+      );
+      animation: moveLine 8s linear infinite;
+      opacity: 0.35;
+    }
+
+    .line:nth-child(1) { left: 15%; animation-delay: 0s; }
+    .line:nth-child(2) { left: 35%; animation-delay: 1.5s; }
+    .line:nth-child(3) { left: 60%; animation-delay: 3s; }
+    .line:nth-child(4) { left: 82%; animation-delay: 4.5s; }
+
+    @keyframes moveLine {
+      0% { transform: translateY(-60%) rotate(12deg); }
+      100% { transform: translateY(10%) rotate(12deg); }
+    }
+
+    .glow {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      filter: blur(90px);
+      background: rgba(255,255,255,0.08);
+      animation: floatGlow 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .glow.one {
+      top: -80px;
+      left: -80px;
+    }
+
+    .glow.two {
+      bottom: -120px;
+      right: -100px;
+      animation-delay: 2s;
+    }
+
+    @keyframes floatGlow {
+      0%, 100% {
+        transform: translateY(0px) translateX(0px) scale(1);
+      }
+      50% {
+        transform: translateY(20px) translateX(10px) scale(1.08);
+      }
+    }
+
+    .card {
+      width: 100%;
+      max-width: 430px;
+      margin: 20px;
+      padding: 34px 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
+      animation: fadeUp 1s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .logo {
+      display: inline-block;
+      font-size: 14px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid transparent;
+      background: var(--input);
+      color: var(--text);
+      padding: 15px 16px;
+      border-radius: 14px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.25s ease;
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.35);
+    }
+
+    input:focus {
+      background: var(--input-focus);
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 15px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #ffffff;
+      color: #000000;
+      transition: 0.25s ease;
+      margin-top: 6px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(255,255,255,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .message {
+      min-height: 24px;
+      margin-top: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--muted);
+      transition: 0.2s ease;
+    }
+
+    .message.success {
+      color: var(--success);
+    }
+
+    .message.error {
+      color: var(--error);
+    }
+
+    .switch-link {
+      display: inline-block;
+      margin-top: 18px;
+      color: rgba(255,255,255,0.78);
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.2s ease;
+    }
+
+    .switch-link:hover {
+      color: #ffffff;
+    }
+
+    .hint {
+      margin-top: 18px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.6;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 26px 18px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="glow one"></div>
+  <div class="glow two"></div>
+
+  <div class="card">
+    <div class="logo">Для своих</div>
+    <h1>Регистрация</h1>
+    <p class="subtitle">
+      Создай аккаунт для входа в закрытый мессенджер для друзей.
+    </p>
+
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="username">Юсернейм</label>
+        <input
+          type="text"
+          id="username"
+          placeholder="Например: alex"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Минимум 6 символов"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <button class="btn" id="registerBtn" type="submit">
+        Зарегистрироваться
+      </button>
+
+      <div class="message" id="message"></div>
+
+      <a class="switch-link" href="login.html">Уже есть аккаунт? Войти</a>
+
+      <div class="hint">
+        После регистрации ты автоматически попадёшь на главную страницу мессенджера.
+      </div>
+    </form>
+
+    <div class="footer-note">Для своих © 2026</div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4Yd3kDph_QWajamhpo8Eq9svs-MyOMOM",
+      authDomain: "dlya-svoih-5db6a.firebaseapp.com",
+      projectId: "dlya-svoih-5db6a",
+      storageBucket: "dlya-svoih-5db6a.firebasestorage.app",
+      messagingSenderId: "974176991313",
+      appId: "1:974176991313:web:245e29bc228100d0452070",
+      databaseURL: "https://dlya-svoih-5db6a-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const form = document.getElementById("registerForm");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const registerBtn = document.getElementById("registerBtn");
+    const message = document.getElementById("message");
+
+    if (localStorage.getItem("currentUser")) {
+      window.location.href = "main.html";
+    }
+
+    function showMessage(text, type = "") {
+      message.textContent = text;
+      message.className = "message";
+      if (type) {
+        message.classList.add(type);
+      }
+    }
+
+    function normalizeUsername(username) {
+      return username.trim().toLowerCase();
+    }
+
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(byte => byte.toString(16).padStart(2, "0")).join("");
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const rawUsername = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      const username = normalizeUsername(rawUsername);
+
+      if (!username || !password) {
+        showMessage("Заполни оба поля.", "error");
+        return;
+      }
+
+      if (username.length < 3) {
+        showMessage("Юсернейм должен быть минимум 3 символа.", "error");
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage("Пароль должен быть минимум 6 символов.", "error");
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        showMessage("Юсернейм может содержать только буквы, цифры и _ .", "error");
+        return;
+      }
+
+      try {
+        registerBtn.disabled = true;
+        registerBtn.textContent = "Создание...";
+
+        const userRef = db.collection("users").doc(username);
+        const userSnap = await userRef.get();
+
+        if (userSnap.exists) {
+          showMessage("Такой юсернейм уже занят.", "error");
+          return;
+        }
+
+        const passwordHash = await hashPassword(password);
+
+        await userRef.set({
+          username: username,
+          passwordHash: passwordHash,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        localStorage.setItem("currentUser", username);
+
+        showMessage("Регистрация прошла успешно. Пользователь создан.", "success");
+        form.reset();
+
+        setTimeout(() => {
+          window.location.href = "main.html";
+        }, 1000);
+
+      } catch (error) {
+        console.error(error);
+        showMessage("Ошибка при регистрации. Проверь Firebase и Firestore.", "error");
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.textContent = "Зарегистрироваться";
+      }
+    });
+  </script>
+</body>
+</html>

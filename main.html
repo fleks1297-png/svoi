@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Для своих — Главная</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --card: rgba(255, 255, 255, 0.06);
+      --card-strong: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.6);
+      --hover: rgba(255, 255, 255, 0.1);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.07), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.05), transparent 28%),
+        linear-gradient(135deg, #000000, #111111 45%, #050505);
+      color: var(--text);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bg-lines {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .line {
+      position: absolute;
+      width: 1px;
+      height: 170%;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(255,255,255,0.12),
+        transparent
+      );
+      animation: moveLine 9s linear infinite;
+      opacity: 0.3;
+    }
+
+    .line:nth-child(1) { left: 12%; animation-delay: 0s; }
+    .line:nth-child(2) { left: 32%; animation-delay: 1.5s; }
+    .line:nth-child(3) { left: 56%; animation-delay: 3s; }
+    .line:nth-child(4) { left: 78%; animation-delay: 4.5s; }
+
+    @keyframes moveLine {
+      0% { transform: translateY(-60%) rotate(10deg); }
+      100% { transform: translateY(10%) rotate(10deg); }
+    }
+
+    .glow {
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      filter: blur(90px);
+      background: rgba(255,255,255,0.07);
+      animation: floatGlow 8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow.one {
+      top: -90px;
+      left: -70px;
+    }
+
+    .glow.two {
+      bottom: -100px;
+      right: -90px;
+      animation-delay: 2s;
+    }
+
+    @keyframes floatGlow {
+      0%, 100% {
+        transform: translateY(0px) translateX(0px) scale(1);
+      }
+      50% {
+        transform: translateY(18px) translateX(12px) scale(1.08);
+      }
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 100vh;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .sidebar,
+    .content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+      animation: fadeUp 0.8s ease;
+      min-height: 0;
+    }
+
+    .content {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      animation: fadeUp 1s ease;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .brand {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 22px;
+      letter-spacing: 0.02em;
+    }
+
+    .profile-box {
+      background: var(--card-strong);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .profile-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .profile-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .logout-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #ffffff;
+      color: #000000;
+      transition: 0.25s ease;
+      margin-bottom: 22px;
+    }
+
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(255,255,255,0.12);
+    }
+
+    .section-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .friends-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+      min-height: 0;
+    }
+
+    .friend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .friend-item:hover {
+      background: var(--hover);
+      transform: translateX(2px);
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .friend-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .friend-status {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .friend-status-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.online {
+      background: #ffffff;
+      box-shadow: 0 0 14px rgba(255,255,255,0.85);
+      animation: pulseDot 1.8s ease-in-out infinite;
+    }
+
+    .status-dot.offline {
+      background: rgba(255,255,255,0.28);
+    }
+
+    @keyframes pulseDot {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 0.7;
+      }
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .welcome h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .status-box {
+      background: var(--card-strong);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      min-width: 200px;
+    }
+
+    .status-box .small {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .status-box .big {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .chats-title {
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 14px;
+    }
+
+    .chat-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .chat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 18px;
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+
+    .chat-card:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-2px);
+    }
+
+    .chat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .chat-name {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .chat-time {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .chat-message {
+      color: rgba(255,255,255,0.72);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      word-break: break-word;
+    }
+
+    .chat-badge {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.09);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .empty-text {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 12px 2px;
+    }
+
+    @media (max-width: 960px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+
+      .content {
+        order: 1;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .sidebar,
+      .content {
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      .welcome h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="glow one"></div>
+  <div class="glow two"></div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">Для своих</div>
+
+      <div class="profile-box">
+        <div class="profile-label">Пользователь</div>
+        <div class="profile-name" id="currentUsername">Гость</div>
+        <div class="profile-sub">Главная страница мессенджера</div>
+      </div>
+
+      <button class="logout-btn" id="logoutBtn">Выйти</button>
+
+      <div class="section-title">Друзья</div>
+      <div class="friends-list" id="friendsList">
+        <div class="empty-text">Загрузка друзей...</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div class="welcome">
+          <h1>Личные сообщения</h1>
+          <p>
+            Нажми на друга слева или на чат ниже, чтобы открыть переписку.
+          </p>
+        </div>
+
+        <div class="status-box">
+          <div class="small">Твой статус</div>
+          <div class="big">Онлайн</div>
+        </div>
+      </div>
+
+      <div class="chats-title">Чаты</div>
+      <div class="chat-list" id="chatList">
+        <div class="empty-text">Загрузка чатов...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4Yd3kDph_QWajamhpo8Eq9svs-MyOMOM",
+      authDomain: "dlya-svoih-5db6a.firebaseapp.com",
+      projectId: "dlya-svoih-5db6a",
+      storageBucket: "dlya-svoih-5db6a.firebasestorage.app",
+      messagingSenderId: "974176991313",
+      appId: "1:974176991313:web:245e29bc228100d0452070",
+      databaseURL: "https://dlya-svoih-5db6a-default-rtdb.firebaseio.com"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+
+    const currentUsernameElement = document.getElementById("currentUsername");
+    const friendsList = document.getElementById("friendsList");
+    const chatList = document.getElementById("chatList");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const currentUser = localStorage.getItem("currentUser");
+
+    if (!currentUser) {
+      window.location.href = "login.html";
+    }
+
+    currentUsernameElement.textContent = currentUser;
+
+    let friends = [];
+    let statuses = {};
+    let chats = [];
+    let currentUserStatusRef = null;
+    let currentUserDisconnectRef = null;
+
+    function createAvatarLetter(name) {
+      return name.charAt(0).toUpperCase();
+    }
+
+    function openChatWith(username) {
+      localStorage.setItem("selectedFriend", username);
+      window.location.href = "chat.html";
+    }
+
+    function formatChatTime(timestamp) {
+      if (!timestamp || typeof timestamp.toDate !== "function") {
+        return "";
+      }
+
+      const date = timestamp.toDate();
+      return date.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function formatLastSeen(lastChanged) {
+      if (!lastChanged) {
+        return "Не в сети";
+      }
+
+      const date = new Date(lastChanged);
+      const now = new Date();
+
+      const time = date.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const sameDay =
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+
+      if (sameDay) {
+        return "Был в сети сегодня в " + time;
+      }
+
+      const day = date.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit"
+      });
+
+      return "Был в сети " + day + " в " + time;
+    }
+
+    function getPresenceMeta(username) {
+      const presence = statuses[username];
+
+      if (presence && presence.state === "online") {
+        return {
+          online: true,
+          text: "Онлайн"
+        };
+      }
+
+      return {
+        online: false,
+        text: presence && presence.lastChanged ? formatLastSeen(presence.lastChanged) : "Не в сети"
+      };
+    }
+
+    function renderFriends() {
+      if (friends.length === 0) {
+        friendsList.innerHTML = `
+          <div class="empty-text">
+            Пока нет других пользователей. Зарегистрируй ещё друзей, и они появятся здесь.
+          </div>
+        `;
+        return;
+      }
+
+      friendsList.innerHTML = "";
+
+      friends.forEach(function (username) {
+        const presence = getPresenceMeta(username);
+
+        const item = document.createElement("div");
+        item.className = "friend-item";
+        item.addEventListener("click", function () {
+          openChatWith(username);
+        });
+
+        item.innerHTML = `
+          <div class="avatar">${createAvatarLetter(username)}</div>
+          <div>
+            <div class="friend-name">${username}</div>
+            <div class="friend-status-line">
+              <span class="status-dot ${presence.online ? "online" : "offline"}"></span>
+              <span class="friend-status">${presence.text}</span>
+            </div>
+          </div>
+        `;
+
+        friendsList.appendChild(item);
+      });
+    }
+
+    function renderChats() {
+      if (chats.length === 0) {
+        chatList.innerHTML = `
+          <div class="empty-text">
+            Чатов пока нет. Открой любого друга слева и отправь первое сообщение.
+          </div>
+        `;
+        return;
+      }
+
+      chatList.innerHTML = "";
+
+      chats.forEach(function (chat) {
+        const presence = getPresenceMeta(chat.friendName);
+
+        const card = document.createElement("div");
+        card.className = "chat-card";
+        card.addEventListener("click", function () {
+          openChatWith(chat.friendName);
+        });
+
+        card.innerHTML = `
+          <div class="chat-top">
+            <div class="chat-name">${chat.friendName}</div>
+            <div class="chat-time">${formatChatTime(chat.updatedAt)}</div>
+          </div>
+
+          <div class="friend-status-line" style="margin-bottom: 12px;">
+            <span class="status-dot ${presence.online ? "online" : "offline"}"></span>
+            <span class="friend-status">${presence.text}</span>
+          </div>
+
+          <div class="chat-message">${chat.lastMessage}</div>
+          <div class="chat-badge">Личный чат</div>
+        `;
+
+        chatList.appendChild(card);
+      });
+    }
+
+    async function loadFriends() {
+      try {
+        friendsList.innerHTML = `<div class="empty-text">Загрузка друзей...</div>`;
+
+        const querySnapshot = await db.collection("users").get();
+        const users = [];
+
+        querySnapshot.forEach(function (docSnap) {
+          const data = docSnap.data();
+
+          if (data.username && data.username !== currentUser.toLowerCase()) {
+            users.push(data.username);
+          }
+        });
+
+        friends = users.sort();
+        renderFriends();
+      } catch (error) {
+        console.error(error);
+        friendsList.innerHTML = `
+          <div class="empty-text">
+            Не удалось загрузить список друзей. Проверь Firebase и Firestore.
+          </div>
+        `;
+      }
+    }
+
+    function listenStatuses() {
+      const statusRef = rtdb.ref("status");
+
+      statusRef.on("value", function (snapshot) {
+        statuses = snapshot.val() || {};
+        renderFriends();
+        renderChats();
+      }, function (error) {
+        console.error("Ошибка загрузки статусов:", error);
+      });
+    }
+
+    function listenChats() {
+      db.collection("conversations").onSnapshot(function (snapshot) {
+        const loadedChats = [];
+
+        snapshot.forEach(function (docSnap) {
+          const data = docSnap.data();
+
+          if (!Array.isArray(data.participants)) {
+            return;
+          }
+
+          if (!data.participants.includes(currentUser)) {
+            return;
+          }
+
+          const friendName = data.participants.find(function (name) {
+            return name !== currentUser;
+          }) || "Чат";
+
+          loadedChats.push({
+            friendName: friendName,
+            lastMessage: data.lastMessage || "Пока нет сообщений",
+            updatedAt: data.updatedAt || null
+          });
+        });
+
+        loadedChats.sort(function (a, b) {
+          const aTime = a.updatedAt && typeof a.updatedAt.toMillis === "function" ? a.updatedAt.toMillis() : 0;
+          const bTime = b.updatedAt && typeof b.updatedAt.toMillis === "function" ? b.updatedAt.toMillis() : 0;
+          return bTime - aTime;
+        });
+
+        chats = loadedChats;
+        renderChats();
+      }, function (error) {
+        console.error(error);
+        chatList.innerHTML = `
+          <div class="empty-text">
+            Не удалось загрузить чаты. Проверь Firebase и Firestore.
+          </div>
+        `;
+      });
+    }
+
+    function setupPresence(username) {
+      currentUserStatusRef = rtdb.ref("status/" + username);
+      const connectedRef = rtdb.ref(".info/connected");
+
+      const offlineState = {
+        state: "offline",
+        lastChanged: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      const onlineState = {
+        state: "online",
+        lastChanged: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      connectedRef.on("value", async function (snapshot) {
+        if (snapshot.val() === false) {
+          return;
+        }
+
+        try {
+          currentUserDisconnectRef = currentUserStatusRef.onDisconnect();
+          await currentUserDisconnectRef.set(offlineState);
+          await currentUserStatusRef.set(onlineState);
+        } catch (error) {
+          console.error("Ошибка presence:", error);
+        }
+      });
+    }
+
+    logoutBtn.addEventListener("click", async function () {
+      try {
+        if (currentUserDisconnectRef) {
+          await currentUserDisconnectRef.cancel();
+        }
+
+        if (currentUserStatusRef) {
+          await currentUserStatusRef.set({
+            state: "offline",
+            lastChanged: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      } catch (error) {
+        console.error("Ошибка выхода:", error);
+      }
+
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("selectedFriend");
+      window.location.href = "login.html";
+    });
+
+    loadFriends();
+    listenStatuses();
+    listenChats();
+    setupPresence(currentUser);
+  </script>
+</body>
+</html>

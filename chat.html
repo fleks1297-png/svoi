@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Для своих — Чат</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --card: rgba(255, 255, 255, 0.06);
+      --card-strong: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.6);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.07), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.05), transparent 28%),
+        linear-gradient(135deg, #000000, #111111 45%, #050505);
+      color: var(--text);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bg-lines {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .line {
+      position: absolute;
+      width: 1px;
+      height: 170%;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(255,255,255,0.12),
+        transparent
+      );
+      animation: moveLine 9s linear infinite;
+      opacity: 0.3;
+    }
+
+    .line:nth-child(1) { left: 12%; animation-delay: 0s; }
+    .line:nth-child(2) { left: 32%; animation-delay: 1.5s; }
+    .line:nth-child(3) { left: 56%; animation-delay: 3s; }
+    .line:nth-child(4) { left: 78%; animation-delay: 4.5s; }
+
+    @keyframes moveLine {
+      0% { transform: translateY(-60%) rotate(10deg); }
+      100% { transform: translateY(10%) rotate(10deg); }
+    }
+
+    .glow {
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      filter: blur(90px);
+      background: rgba(255,255,255,0.07);
+      animation: floatGlow 8s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow.one {
+      top: -90px;
+      left: -70px;
+    }
+
+    .glow.two {
+      bottom: -100px;
+      right: -90px;
+      animation-delay: 2s;
+    }
+
+    @keyframes floatGlow {
+      0%, 100% {
+        transform: translateY(0px) translateX(0px) scale(1);
+      }
+      50% {
+        transform: translateY(18px) translateX(12px) scale(1.08);
+      }
+    }
+
+    .chat-shell {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .chat-card {
+      height: calc(100vh - 36px);
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .back-btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .friend-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .friend-info {
+      min-width: 0;
+    }
+
+    .friend-name {
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .friend-status {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .friend-status-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.online {
+      background: #ffffff;
+      box-shadow: 0 0 14px rgba(255,255,255,0.85);
+      animation: pulseDot 1.8s ease-in-out infinite;
+    }
+
+    .status-dot.offline {
+      background: rgba(255,255,255,0.28);
+    }
+
+    @keyframes pulseDot {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 0.7;
+      }
+    }
+
+    .brand {
+      font-size: 14px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      white-space: nowrap;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .empty-chat {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: center;
+      margin: auto;
+      max-width: 420px;
+    }
+
+    .message-row {
+      display: flex;
+    }
+
+    .message-row.outgoing {
+      justify-content: flex-end;
+    }
+
+    .message-row.incoming {
+      justify-content: flex-start;
+    }
+
+    .message-bubble {
+      max-width: min(75%, 520px);
+      border-radius: 20px;
+      padding: 14px 16px 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      animation: fadeUp 0.25s ease;
+    }
+
+    .message-row.outgoing .message-bubble {
+      background: #ffffff;
+      color: #000000;
+      border-bottom-right-radius: 8px;
+    }
+
+    .message-row.incoming .message-bubble {
+      background: rgba(255,255,255,0.07);
+      color: #ffffff;
+      border-bottom-left-radius: 8px;
+    }
+
+    .message-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .delete-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .message-row.outgoing .delete-btn {
+      background: rgba(0,0,0,0.08);
+      color: #000000;
+    }
+
+    .delete-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.14);
+    }
+
+    .message-text {
+      font-size: 15px;
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .message-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.7;
+      text-align: right;
+    }
+
+    .composer {
+      padding: 16px 18px 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .composer-form {
+      display: grid;
+      grid-template-columns: 1fr 150px;
+      gap: 12px;
+    }
+
+    .composer-input {
+      width: 100%;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+      padding: 16px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .composer-input::placeholder {
+      color: rgba(255,255,255,0.35);
+    }
+
+    .composer-input:focus {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.2);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
+    }
+
+    .send-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #ffffff;
+      color: #000000;
+      transition: 0.2s ease;
+    }
+
+    .send-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(255,255,255,0.12);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .chat-shell {
+        padding: 12px;
+      }
+
+      .chat-card {
+        height: calc(100vh - 24px);
+        border-radius: 18px;
+      }
+
+      .chat-header {
+        padding: 14px;
+      }
+
+      .messages {
+        padding: 16px;
+      }
+
+      .composer {
+        padding: 12px;
+      }
+
+      .composer-form {
+        grid-template-columns: 1fr;
+      }
+
+      .message-bubble {
+        max-width: 88%;
+      }
+
+      .brand {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-lines">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="glow one"></div>
+  <div class="glow two"></div>
+
+  <div class="chat-shell">
+    <div class="chat-card">
+      <div class="chat-header">
+        <div class="header-left">
+          <button class="back-btn" id="backBtn">← Назад</button>
+          <div class="friend-avatar" id="friendAvatar">?</div>
+          <div class="friend-info">
+            <div class="friend-name" id="friendName">Чат</div>
+            <div class="friend-status-line">
+              <span class="status-dot offline" id="friendStatusDot"></span>
+              <span class="friend-status" id="friendStatus">Не в сети</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="brand">Для своих</div>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="empty-chat">
+          Загрузка сообщений...
+        </div>
+      </div>
+
+      <div class="composer">
+        <form class="composer-form" id="messageForm">
+          <input
+            class="composer-input"
+            id="messageInput"
+            type="text"
+            placeholder="Напиши сообщение..."
+            autocomplete="off"
+          />
+          <button class="send-btn" id="sendBtn" type="submit">Отправить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4Yd3kDph_QWajamhpo8Eq9svs-MyOMOM",
+      authDomain: "dlya-svoih-5db6a.firebaseapp.com",
+      projectId: "dlya-svoih-5db6a",
+      storageBucket: "dlya-svoih-5db6a.firebasestorage.app",
+      messagingSenderId: "974176991313",
+      appId: "1:974176991313:web:245e29bc228100d0452070",
+      databaseURL: "https://dlya-svoih-5db6a-default-rtdb.firebaseio.com"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+
+    const currentUser = localStorage.getItem("currentUser");
+    const selectedFriend = localStorage.getItem("selectedFriend");
+
+    if (!currentUser) {
+      window.location.href = "login.html";
+    }
+
+    if (!selectedFriend) {
+      window.location.href = "main.html";
+    }
+
+    const friendNameEl = document.getElementById("friendName");
+    const friendAvatarEl = document.getElementById("friendAvatar");
+    const friendStatusEl = document.getElementById("friendStatus");
+    const friendStatusDotEl = document.getElementById("friendStatusDot");
+    const messagesEl = document.getElementById("messages");
+    const messageForm = document.getElementById("messageForm");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const backBtn = document.getElementById("backBtn");
+
+    let currentUserStatusRef = null;
+    let currentUserDisconnectRef = null;
+
+    friendNameEl.textContent = selectedFriend;
+    friendAvatarEl.textContent = selectedFriend.charAt(0).toUpperCase();
+    document.title = "Для своих — " + selectedFriend;
+
+    function getConversationId(userA, userB) {
+      return [userA.toLowerCase(), userB.toLowerCase()].sort().join("__");
+    }
+
+    const conversationId = getConversationId(currentUser, selectedFriend);
+    const conversationRef = db.collection("conversations").doc(conversationId);
+    const messagesRef = conversationRef.collection("messages");
+
+    function formatTime(timestamp) {
+      if (!timestamp || typeof timestamp.toDate !== "function") {
+        return "Отправка...";
+      }
+
+      const date = timestamp.toDate();
+      return date.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function formatLastSeen(lastChanged) {
+      if (!lastChanged) {
+        return "Не в сети";
+      }
+
+      const date = new Date(lastChanged);
+      const now = new Date();
+
+      const time = date.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const sameDay =
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+
+      if (sameDay) {
+        return "Был в сети сегодня в " + time;
+      }
+
+      const day = date.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit"
+      });
+
+      return "Был в сети " + day + " в " + time;
+    }
+
+    function updateFriendPresence(presence) {
+      const isOnline = presence && presence.state === "online";
+
+      friendStatusDotEl.className = "status-dot " + (isOnline ? "online" : "offline");
+      friendStatusEl.textContent = isOnline
+        ? "Онлайн"
+        : (presence && presence.lastChanged ? formatLastSeen(presence.lastChanged) : "Не в сети");
+    }
+
+    function scrollToBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function getMessagePreview(data) {
+      return data.text || "Пока нет сообщений";
+    }
+
+    async function syncConversationAfterDelete() {
+      try {
+        const latestSnapshot = await messagesRef
+          .orderBy("createdAt", "desc")
+          .limit(1)
+          .get();
+
+        if (latestSnapshot.empty) {
+          await conversationRef.delete();
+          return;
+        }
+
+        const latestDoc = latestSnapshot.docs[0];
+        const latestData = latestDoc.data();
+
+        await conversationRef.set({
+          participants: [currentUser, selectedFriend].sort(),
+          lastMessage: getMessagePreview(latestData),
+          updatedAt: latestData.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        console.error("Ошибка обновления чата после удаления:", error);
+      }
+    }
+
+    async function deleteMessage(messageId) {
+      const confirmDelete = confirm("Удалить это сообщение?");
+
+      if (!confirmDelete) {
+        return;
+      }
+
+      try {
+        await messagesRef.doc(messageId).delete();
+        await syncConversationAfterDelete();
+      } catch (error) {
+        console.error(error);
+        alert("Не удалось удалить сообщение.");
+      }
+    }
+
+    function renderMessages(snapshot) {
+      messagesEl.innerHTML = "";
+
+      if (snapshot.empty) {
+        const empty = document.createElement("div");
+        empty.className = "empty-chat";
+        empty.textContent = "Сообщений пока нет. Напиши первым.";
+        messagesEl.appendChild(empty);
+        return;
+      }
+
+      snapshot.forEach(function (docSnap) {
+        const data = docSnap.data();
+        const isMine = data.sender === currentUser;
+
+        const row = document.createElement("div");
+        row.className = "message-row " + (isMine ? "outgoing" : "incoming");
+
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble";
+
+        if (isMine) {
+          const actions = document.createElement("div");
+          actions.className = "message-actions";
+
+          const deleteButton = document.createElement("button");
+          deleteButton.className = "delete-btn";
+          deleteButton.type = "button";
+          deleteButton.textContent = "Удалить";
+          deleteButton.addEventListener("click", function () {
+            deleteMessage(docSnap.id);
+          });
+
+          actions.appendChild(deleteButton);
+          bubble.appendChild(actions);
+        }
+
+        const text = document.createElement("div");
+        text.className = "message-text";
+        text.textContent = data.text || "";
+
+        const meta = document.createElement("div");
+        meta.className = "message-meta";
+        meta.textContent = formatTime(data.createdAt);
+
+        bubble.appendChild(text);
+        bubble.appendChild(meta);
+        row.appendChild(bubble);
+        messagesEl.appendChild(row);
+      });
+
+      scrollToBottom();
+    }
+
+    function setupPresence(username) {
+      currentUserStatusRef = rtdb.ref("status/" + username);
+      const connectedRef = rtdb.ref(".info/connected");
+
+      const offlineState = {
+        state: "offline",
+        lastChanged: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      const onlineState = {
+        state: "online",
+        lastChanged: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      connectedRef.on("value", async function (snapshot) {
+        if (snapshot.val() === false) {
+          return;
+        }
+
+        try {
+          currentUserDisconnectRef = currentUserStatusRef.onDisconnect();
+          await currentUserDisconnectRef.set(offlineState);
+          await currentUserStatusRef.set(onlineState);
+        } catch (error) {
+          console.error("Ошибка presence:", error);
+        }
+      });
+    }
+
+    function listenFriendPresence() {
+      const friendStatusRef = rtdb.ref("status/" + selectedFriend);
+
+      friendStatusRef.on("value", function (snapshot) {
+        updateFriendPresence(snapshot.val());
+      }, function (error) {
+        console.error("Ошибка статуса друга:", error);
+        updateFriendPresence(null);
+      });
+    }
+
+    messagesRef.orderBy("createdAt", "asc").onSnapshot(function (snapshot) {
+      renderMessages(snapshot);
+    }, function (error) {
+      console.error(error);
+      messagesEl.innerHTML = `
+        <div class="empty-chat">
+          Не удалось загрузить сообщения. Проверь Firebase и Firestore.
+        </div>
+      `;
+    });
+
+    messageForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const text = messageInput.value.trim();
+
+      if (!text) {
+        return;
+      }
+
+      try {
+        sendBtn.disabled = true;
+        sendBtn.textContent = "Отправка...";
+
+        await messagesRef.add({
+          type: "text",
+          text: text,
+          sender: currentUser,
+          receiver: selectedFriend,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        await conversationRef.set({
+          participants: [currentUser, selectedFriend].sort(),
+          lastMessage: text,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        messageInput.value = "";
+        messageInput.focus();
+      } catch (error) {
+        console.error(error);
+        alert("Ошибка отправки сообщения. Проверь Firebase и Firestore.");
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Отправить";
+      }
+    });
+
+    backBtn.addEventListener("click", function () {
+      window.location.href = "main.html";
+    });
+
+    setupPresence(currentUser);
+    listenFriendPresence();
+  </script>
+</body>
+</html>
